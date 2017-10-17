@@ -1,0 +1,8 @@
+{
+  "name": "example",
+  "description": "Cloud Firebase example",
+  "dependencies": {
+    "@google-cloud/firestore": "~0.8.2"
+  },
+  "private": true
+}
