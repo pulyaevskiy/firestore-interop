@@ -86,8 +86,8 @@ class Firestore {
   /// returned by the updateFunction will be returned here. Else if the
   /// transaction failed, a rejected Promise with the corresponding failure
   /// error will be returned.
-  external Promise<dynamic/*=T*/ > runTransaction/*<T>*/(
-      Promise<dynamic/*=T*/ > updateFunction(Transaction transaction));
+  external Promise<T> runTransaction<T>(
+      Promise<T> updateFunction(Transaction transaction));
 
   /// Creates a write batch, used for performing multiple writes as a single
   /// atomic operation.
