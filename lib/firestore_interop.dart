@@ -28,8 +28,6 @@ library firestore_interop;
 import 'dart:js';
 import 'dart:js_util';
 
-import 'package:node_interop/node.dart';
-
 import 'src/firestore.dart';
 
 export 'src/firestore.dart';
@@ -39,7 +37,8 @@ export 'src/firestore.dart';
 /// Uses [projectId] and [keyFilename] as credentials if provided, otherwise
 /// attempts to use [Application Default Credentials (ADC)](https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application).
 Firestore initFirestore({String projectId, String keyFilename}) {
-  context['FirebaseFirestore'] = require('@google-cloud/firestore');
+  context['FirebaseFirestore'] =
+      context.callMethod('require', ['@google-cloud/firestore']);
 
   if (projectId != null && keyFilename != null) {
     var options = newObject();
