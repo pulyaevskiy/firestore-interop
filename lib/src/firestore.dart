@@ -3,7 +3,8 @@ library firestore;
 
 import "package:js/js.dart";
 import "package:func/func.dart";
-import "package:node_interop/node_interop.dart";
+import "package:node_interop/node.dart";
+import "package:node_interop/stream.dart";
 
 /// @fileoverview Firestore Server API.
 /// Copyright 2017 Google Inc. All Rights Reserved.
@@ -70,6 +71,10 @@ class Firestore {
       DocumentReference documentRef3,
       DocumentReference documentRef4,
       DocumentReference documentRef5]);
+
+  /// Fetches the root collections that are associated with this Firestore
+  /// database.
+  external Promise<List<CollectionReference>> getCollections();
 
   /// Executes the given updateFunction and commits the changes applied within
   /// the transaction.
@@ -295,6 +300,9 @@ class DocumentReference {
   /// the specified path.
   external CollectionReference collection(String collectionPath);
 
+  /// Fetches the subcollections that are direct children of this document.
+  external Promise<List<CollectionReference>> getCollections();
+
   /// Creates a document referred to by this `DocumentReference` with the
   /// provided object values. The write fails if the document already exists
   external Promise<WriteResult> create(DocumentData data);
@@ -342,6 +350,9 @@ class DocumentReference {
 /// A `DocumentSnapshot` contains data read from a document in your Firestore
 /// database. The data can be extracted with `.data()` or `.get(<field>)` to
 /// get a specific field.
+/// For a `DocumentSnapshot` that points to a non-existing document, any data
+/// access will return 'undefined'. You can use the `exists` property to
+/// explicitly verify a document's existence.
 @JS("FirebaseFirestore.DocumentSnapshot")
 class DocumentSnapshot {
   // @Ignore
@@ -374,12 +385,41 @@ class DocumentSnapshot {
   external String get readTime;
   external set readTime(String v);
 
-  /// Retrieves all fields in the document as an Object.
-  external DocumentData data();
+  /// Retrieves all fields in the document as an Object. Returns 'undefined' if
+  /// the document doesn't exist.
+  external dynamic /*DocumentData|dynamic*/ data();
 
   /// Retrieves the field specified by `fieldPath`.
   /// field exists in the document.
   external dynamic get(dynamic /*String|FieldPath*/ fieldPath);
+}
+
+/// A `QueryDocumentSnapshot` contains data read from a document in your
+/// Firestore database as part of a query. The document is guaranteed to exist
+/// and its data can be extracted with `.data()` or `.get(<field>)` to get a
+/// specific field.
+/// A `QueryDocumentSnapshot` offers the same API surface as a
+/// `DocumentSnapshot`. Since query results contain only existing documents, the
+/// `exists` property will always be true and `data()` will never return
+/// 'undefined'.
+@JS("FirebaseFirestore.QueryDocumentSnapshot")
+class QueryDocumentSnapshot extends DocumentSnapshot {
+  // @Ignore
+  QueryDocumentSnapshot.fakeConstructor$() : super.fakeConstructor$();
+  external factory QueryDocumentSnapshot();
+
+  /// The time the document was created.
+  external String get createTime;
+  external set createTime(String v);
+
+  /// The time the document was last updated (at the time the snapshot was
+  /// generated).
+  external String get updateTime;
+  external set updateTime(String v);
+
+  /// Retrieves all fields in the document as an Object.
+  /// @override
+  external DocumentData data();
 }
 
 /// The direction of a `Query.orderBy()` clause is specified as 'desc' or 'asc'
@@ -402,7 +442,7 @@ class Query {
   external set firestore(Firestore v);
 
   /// Creates and returns a new Query with the additional filter that documents
-  /// must contain the specified field and the value should satisfy the
+  /// must contain the specified field and that its value should satisfy the
   /// relation constraint provided.
   /// This function returns a new (immutable) instance of the Query (rather
   /// than modify the existing instance) to impose the filter.
@@ -441,49 +481,77 @@ class Query {
       dynamic /*String|FieldPath*/ field4,
       dynamic /*String|FieldPath*/ field5]);
 
+  /// Creates and returns a new Query that starts at the provided document
+  /// (inclusive). The starting position is relative to the order of the query.
+  /// The document must contain all of the fields provided in the orderBy of
+  /// this query.
+  /*external Query startAt(DocumentSnapshot snapshot);*/
   /// Creates and returns a new Query that starts at the provided fields
   /// relative to the order of the query. The order of the field values
   /// must match the order of the order by clauses of the query.
   /// of the query's order by.
+  /*external Query startAt(
+    [dynamic fieldValues1,
+    dynamic fieldValues2,
+    dynamic fieldValues3,
+    dynamic fieldValues4,
+    dynamic fieldValues5]);*/
   external Query startAt(
-      [dynamic fieldValues1,
-      dynamic fieldValues2,
-      dynamic fieldValues3,
-      dynamic fieldValues4,
-      dynamic fieldValues5]);
+      dynamic /*DocumentSnapshot|List<dynamic>*/ snapshot_fieldValues);
 
+  /// Creates and returns a new Query that starts after the provided document
+  /// (exclusive). The starting position is relative to the order of the query.
+  /// The document must contain all of the fields provided in the orderBy of
+  /// this query.
+  /*external Query startAfter(DocumentSnapshot snapshot);*/
   /// Creates and returns a new Query that starts after the provided fields
   /// relative to the order of the query. The order of the field values
   /// must match the order of the order by clauses of the query.
   /// of the query's order by.
+  /*external Query startAfter(
+    [dynamic fieldValues1,
+    dynamic fieldValues2,
+    dynamic fieldValues3,
+    dynamic fieldValues4,
+    dynamic fieldValues5]);*/
   external Query startAfter(
-      [dynamic fieldValues1,
-      dynamic fieldValues2,
-      dynamic fieldValues3,
-      dynamic fieldValues4,
-      dynamic fieldValues5]);
+      dynamic /*DocumentSnapshot|List<dynamic>*/ snapshot_fieldValues);
 
+  /// Creates and returns a new Query that ends before the provided document
+  /// (exclusive). The end position is relative to the order of the query. The
+  /// document must contain all of the fields provided in the orderBy of this
+  /// query.
+  /*external Query endBefore(DocumentSnapshot snapshot);*/
   /// Creates and returns a new Query that ends before the provided fields
   /// relative to the order of the query. The order of the field values
   /// must match the order of the order by clauses of the query.
   /// of the query's order by.
+  /*external Query endBefore(
+    [dynamic fieldValues1,
+    dynamic fieldValues2,
+    dynamic fieldValues3,
+    dynamic fieldValues4,
+    dynamic fieldValues5]);*/
   external Query endBefore(
-      [dynamic fieldValues1,
-      dynamic fieldValues2,
-      dynamic fieldValues3,
-      dynamic fieldValues4,
-      dynamic fieldValues5]);
+      dynamic /*DocumentSnapshot|List<dynamic>*/ snapshot_fieldValues);
 
+  /// Creates and returns a new Query that ends at the provided document
+  /// (inclusive). The end position is relative to the order of the query. The
+  /// document must contain all of the fields provided in the orderBy of this
+  /// query.
+  /*external Query endAt(DocumentSnapshot snapshot);*/
   /// Creates and returns a new Query that ends at the provided fields
   /// relative to the order of the query. The order of the field values
   /// must match the order of the order by clauses of the query.
   /// of the query's order by.
+  /*external Query endAt(
+    [dynamic fieldValues1,
+    dynamic fieldValues2,
+    dynamic fieldValues3,
+    dynamic fieldValues4,
+    dynamic fieldValues5]);*/
   external Query endAt(
-      [dynamic fieldValues1,
-      dynamic fieldValues2,
-      dynamic fieldValues3,
-      dynamic fieldValues4,
-      dynamic fieldValues5]);
+      dynamic /*DocumentSnapshot|List<dynamic>*/ snapshot_fieldValues);
 
   /// Executes the query and returns the results as a `QuerySnapshot`.
   external Promise<QuerySnapshot> get();
@@ -499,7 +567,7 @@ class Query {
       [void onError(Error error)]);
 }
 
-/// A `QuerySnapshot` contains zero or more `DocumentSnapshot` objects
+/// A `QuerySnapshot` contains zero or more `QueryDocumentSnapshot` objects
 /// representing the results of a query. The documents can be accessed as an
 /// array via the `docs` property or enumerated using the `forEach` method. The
 /// number of documents can be determined via the `empty` and `size`
@@ -522,8 +590,8 @@ class QuerySnapshot {
   external set docChanges(List<DocumentChange> v);
 
   /// An array of all the documents in the QuerySnapshot.
-  external List<DocumentSnapshot> get docs;
-  external set docs(List<DocumentSnapshot> v);
+  external List<QueryDocumentSnapshot> get docs;
+  external set docs(List<QueryDocumentSnapshot> v);
 
   /// The number of documents in the QuerySnapshot.
   external num get size;
@@ -539,7 +607,7 @@ class QuerySnapshot {
 
   /// Enumerates all of the documents in the QuerySnapshot.
   /// each document in the snapshot.
-  external void forEach(void callback(DocumentSnapshot result),
+  external void forEach(void callback(QueryDocumentSnapshot result),
       [dynamic thisArg]);
 }
 
@@ -555,8 +623,8 @@ abstract class DocumentChange {
   external set type(String /*'added'|'removed'|'modified'*/ v);
 
   /// The document affected by this change.
-  external DocumentSnapshot get doc;
-  external set doc(DocumentSnapshot v);
+  external QueryDocumentSnapshot get doc;
+  external set doc(QueryDocumentSnapshot v);
 
   /// The index of the changed document in the result set immediately prior to
   /// this DocumentChange (i.e. supposing that all prior DocumentChange objects
@@ -572,7 +640,7 @@ abstract class DocumentChange {
   external set newIndex(num v);
   external factory DocumentChange(
       {String /*'added'|'removed'|'modified'*/ type,
-      DocumentSnapshot doc,
+      QueryDocumentSnapshot doc,
       num oldIndex,
       num newIndex});
 }

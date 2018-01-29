@@ -11,13 +11,13 @@
 
 dart_js_facade_gen --destination=lib/src --basePath=. firestore.d.ts
 
-awk '/func.dart/ { print; print "import \"package:node_interop/node_interop.dart\";"; next }1' lib/src/firestore.dart > lib/src/firestore.tmp.dart
+awk '/func.dart/ { print; print "import \"package:node_interop/node.dart\";\nimport \"package:node_interop/stream.dart\";"; next }1' lib/src/firestore.dart > lib/src/firestore.tmp.dart
 rm lib/src/firestore.dart
 mv lib/src/firestore.tmp.dart lib/src/firestore.dart
-echo "Added dependency on node_interop (type definition for Promise)"
+echo "Added dependency on node_interop (type definition for Promise and Readable)"
 
-sed -i '' 's/NodeJS\.ReadStream/Readable/g' lib/src/firestore.dart
-echo "Replaced 'NodeJS.ReadStream' with 'Readable' defined in node_interop"
+sed -i '' 's/NodeJS\.ReadableStream/Readable/g' lib/src/firestore.dart
+echo "Replaced 'NodeJS.ReadableStream' with 'Readable' defined in node_interop"
 
 sed -i '' 's/JS$set(/set(/g' lib/src/firestore.dart
 sed -i '' 's/JS$get(/get(/g' lib/src/firestore.dart
